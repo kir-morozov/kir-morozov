@@ -21,4 +21,4 @@ Here are some ideas to get you started:
 
 🥝 Interested in medicine and using computers to understand humans better
 
-  ssr repository contains all work from the summer science research 2024 program
+🪐 
