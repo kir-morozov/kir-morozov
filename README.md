@@ -15,8 +15,8 @@ Here are some ideas to get you started:
 - ⚡ Fun fact: ...
 -->
 
-🤖 I'm a student learning about balancing selection and evolution modeling!
-🦐 Math nerd and cryptid appreciator:)
-🥝 Interested in medicine and using computers to understand humans better
+- 🤖 I'm a student learning about balancing selection and evolution modeling!
+- 🦐 Math nerd and cryptid appreciator:)
+- 🥝 Interested in medicine and using computers to understand humans better
 
-ssr repository contains all work from the summer science research 2024 program
+- ssr repository contains all work from the summer science research 2024 program
