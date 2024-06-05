@@ -21,4 +21,4 @@ Here are some ideas to get you started:
 
 🥝 Interested in medicine and using computers to understand humans better
 
-🪐 
+🪐 Member of @bitarellolab at Bryn Mawr College
