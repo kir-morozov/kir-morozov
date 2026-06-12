@@ -1,1 +1,365 @@
-aw
+% INITIALIZE THE POPULATION AND THEIR GENOTYPES
+
+% =================================================================
+
+% Create the genotype ("strategy") vector for the whole population
+
+% State actual size of the population
+population_size = 18500;
+
+
+% This vector "numbers" every individual in the population
+population_vector = 1:population_size;
+
+
+% Denote the AA genotype as 1, As - 2, ss - 3.
+
+% DICTATE HOW MANY TIMES WE WILL REPEAT THE SIMULATION FROM THE START
+
+number_of_simulations = 10;
+
+%This table will be used to make the figure produced by this code
+summary_table = zeros(number_of_simulations, 7);
+
+for k=1:number_of_simulations
+
+
+% First create a basic vector of a population where everyone is AA (we will
+% fix this to include As and ss a bit later)
+pop_genotypes_vector = ones(1,population_size);
+
+% Add the single indivual with a mutation
+
+sampled_heterozygote = randsample(population_vector, 1);
+pop_genotypes_vector(1, sampled_heterozygote) = 2;
+
+
+
+
+% DIVIDE THE POPULATION INTO (sub-vector) ISLANDS EACH OF SIZE 2 (THIS IS THE NUCLEAR
+% FAMILY)
+
+% ================================================================
+
+%Specify the size of each island
+length_subvector = 2;
+
+% Dictate the number of sub-vectors/islands
+number_of_islands = population_size/length_subvector;
+
+% randomize the distribution of individuals into families
+randomPopulationIndices = randperm(population_size);
+
+% Extract sub-vectors/islands into a matrix
+islands_matrix = zeros(number_of_islands, 5);
+startIndex = 1;
+for i = 1:number_of_islands
+    % first entry in each row of the matrix is the number of the island
+    islands_matrix(i,1)= i; 
+    endIndex = startIndex + length_subvector - 1;
+    % second entry - original index of the individual 1 on said island,
+    % third - their respective genotype
+    currentIndex_one = randomPopulationIndices(startIndex);
+    islands_matrix(i,2) = currentIndex_one;
+    islands_matrix(i,3) = pop_genotypes_vector(currentIndex_one);
+    % fourth entry - og index of ind 2 on the island, fifth - their
+    % genotype
+    currentIndex_two = randomPopulationIndices(endIndex);
+    islands_matrix(i,4) = currentIndex_two;
+    islands_matrix(i,5) = pop_genotypes_vector(currentIndex_two);
+
+    startIndex = endIndex + 1;
+end
+
+
+% Now we need to save the initial distributions in a table
+
+% First count AA
+counting_AA_initial = (islands_matrix(:, 3) == 1);
+counting_AA_two_initial = (islands_matrix(:, 5) == 1);
+% Sum to get the total number of AA in the population
+count_AA_initial = counting_AA_initial+counting_AA_two_initial;
+count_AA_initial_sum = sum(count_AA_initial);
+% Now count As
+counting_As_initial = (islands_matrix(:, 3) == 2);
+counting_As_two_initial = (islands_matrix(:, 5) == 2);
+% Sum to get the total number of As in the population
+count_As_initial = counting_As_initial+counting_As_two_initial;
+count_As_initial_sum = sum(count_As_initial);
+% Lastly, count ss
+counting_ss_initial = (islands_matrix(:, 3) == 3);
+counting_ss_two_initial = (islands_matrix(:, 5) == 3);
+% Sum to get the total number of ss in the population
+count_ss_initial = counting_ss_initial+counting_ss_two_initial;
+count_ss_initial_sum = sum(count_ss_initial);
+
+
+
+summary_table(k,1) = k;
+summary_table(k,2) = count_AA_initial_sum;
+summary_table(k,3) = count_As_initial_sum;
+summary_table(k,4) = count_ss_initial_sum;
+
+% DICTATE HOW MANY GENERATIONS WE WILL RUN THE SIMULATION FOR
+
+number_of_steps = 270;
+
+
+% BIRTH AND REPLACEMENT - REPLACE PARENTS ON EACH ISLANDS WITH THEIR
+% CHILDREN
+
+% =================================================================
+
+
+
+% First indicate what genotype distribution every genotypic combination of
+% parents will result in (for example, all children of AA+AA pairing will
+% be AA)
+
+genotype_distribution_AA_AA = [1];
+genotype_distribution_AA_As = [1,2];
+genotype_distribution_AA_ss = [2];
+genotype_distribution_As_As = [1,2,2,3];
+genotype_distribution_As_ss = [2,3];
+genotype_distribution_ss_ss = [3];
+
+
+
+for j=1:number_of_steps
+% 2 children are born and replace parents --> we simply update each island
+% to have the children's genotypes now instead of parents
+
+
+for i=1:number_of_islands
+    if islands_matrix(i,3) == 1 & islands_matrix(i,5) == 1
+        random_values = randsample(genotype_distribution_AA_AA, 2, true);
+        islands_matrix(i,3) = random_values(1);
+        islands_matrix(i,5)= random_values(2);
+    elseif islands_matrix(i,3) == 1 & islands_matrix(i,5) == 2
+        random_values = randsample(genotype_distribution_AA_As, 2, true);
+        islands_matrix(i,3) = random_values(1);
+        islands_matrix(i,5) = random_values(2);
+    elseif islands_matrix(i,3) == 2 & islands_matrix(i,5) == 1
+        random_values = randsample(genotype_distribution_AA_As, 2, true);
+        islands_matrix(i,3) = random_values(1);
+        islands_matrix(i,5) = random_values(2);
+    elseif islands_matrix(i,3) == 1 & islands_matrix(i,5) == 3
+        random_values = randsample(genotype_distribution_AA_ss, 2, true);
+        islands_matrix(i,3) = random_values(1);
+        islands_matrix(i,5) = random_values(2);
+    elseif islands_matrix(i,3) == 3 & islands_matrix(i,5) == 1
+        random_values = randsample(genotype_distribution_AA_ss, 2, true);
+        islands_matrix(i,3) = random_values(1);
+        islands_matrix(i,5) = random_values(2);
+    elseif islands_matrix(i,3) == 2 & islands_matrix(i,5) == 2
+        random_values = randsample(genotype_distribution_As_As, 2, true);
+        islands_matrix(i,3) = random_values(1);
+        islands_matrix(i,5) = random_values(2);
+    elseif islands_matrix(i,3) == 2 & islands_matrix(i,5) == 3
+        random_values = randsample(genotype_distribution_As_ss, 2, true);
+        islands_matrix(i,3) = random_values(1);
+        islands_matrix(i,5) = random_values(2);
+    elseif islands_matrix(i,3) == 3 & islands_matrix(i,5) == 2
+        random_values = randsample(genotype_distribution_As_ss, 2, true);
+        islands_matrix(i,3) = random_values(1);
+        islands_matrix(i,5) = random_values(2);
+    elseif islands_matrix(i,3) == 3 & islands_matrix(i,5) == 3
+        random_values = randsample(genotype_distribution_ss_ss, 2, true);
+        islands_matrix(i,3) = random_values(1);
+        islands_matrix(i,5) = random_values(2);
+    end
+end
+
+
+
+
+% SELECTIVE STEP - UPDATE THE POPULATION BASED ON WHO SURVIVED AND DIDN'T
+
+% =================================================================
+
+
+% Now that on all islands children replaced parents, let the children grow
+% up - some of them will die due to either malaria or sickle cell, some of
+% them will live
+
+% Children with different genotypes will survive at different rates - if
+% they die, replace their genotype with 0, so we can easily identify them
+% in the population later
+
+
+% Here are the probabilities of surviving or living 
+vector_for_survival = 1:1000;
+
+% make a vector with 1000 values
+% pick from the vector randomly. If we are drawing for a genotype 1 individual
+% and the value picked is less or equal to 10,replace the genotype of 1 
+% with 0. Do not draw for genotype 2 individuals (they survive by default).
+% If drawing for genotype 3 individual, and the value is less or equal to
+% 700, replace genotype 3 with 0.
+
+
+for i=1:number_of_islands
+        if islands_matrix(i,3) == 1 
+           sampled_survival = randsample(vector_for_survival, 1);
+           if sampled_survival <= 200
+               islands_matrix(i,3) = 0;
+           else
+               islands_matrix(i,3) = 1;
+           end 
+        elseif islands_matrix(i,3) == 3
+           sampled_survival = randsample(vector_for_survival, 1);
+           if sampled_survival <= 950
+               islands_matrix(i,3) = 0;
+           else
+               islands_matrix(i,3) = 3;
+           end 
+        else 
+        end
+end
+
+
+for i=1:number_of_islands
+        if islands_matrix(i,5) == 1 
+           sampled_survival = randsample(vector_for_survival, 1);
+           if sampled_survival <= 200
+               islands_matrix(i,5) = 0;
+           else
+               islands_matrix(i,5) = 1;
+           end 
+        elseif islands_matrix(i,5) == 3
+           sampled_survival = randsample(vector_for_survival, 1);
+           if sampled_survival <= 950
+               islands_matrix(i,5) = 0;
+           else 
+               islands_matrix(i,5) = 3;
+           end
+        else 
+        end
+end
+       
+%disp('Survivors:');
+%disp(islands_matrix);
+
+% Now we need to replenish the population to maintan population size -
+% replace all the "dead" individuals with new individuals with genotypes
+% randomly drawn from a population where the mutation arises from time to
+% time
+counting_AA = (islands_matrix(:, 3) == 1);
+counting_AA_two = (islands_matrix(:, 5) == 1);
+% Sum to get the total number of AA in the population
+count_AA = counting_AA+counting_AA_two;
+count_AA_sum = sum(count_AA);
+% Now count As
+counting_As = (islands_matrix(:, 3) == 2);
+counting_As_two = (islands_matrix(:, 5) == 2);
+% Sum to get the total number of As in the population
+count_As = counting_As+counting_As_two;
+count_As_sum = sum(count_As);
+% Lastly, count ss
+counting_ss = (islands_matrix(:, 3) == 3);
+counting_ss_two = (islands_matrix(:, 5) == 3);
+% Sum to get the total number of ss in the population
+count_ss = counting_ss+counting_ss_two;
+count_ss_sum = sum(count_ss);
+
+proportion_of_AA = (count_AA_sum/population_size);
+proportion_of_As = (count_As_sum/population_size);
+proportion_of_ss = (count_ss_sum/population_size);
+
+
+for i=1:number_of_islands
+    if islands_matrix(i,3) == 0
+        sampled_survival = rand(1);
+           if sampled_survival <= proportion_of_ss
+               islands_matrix(i,3) = 3;
+           elseif sampled_survival <= proportion_of_As
+               islands_matrix(i,3) = 2;
+           else
+               islands_matrix(i,3) = 1;
+           end 
+    else
+    end
+end
+
+for i=1:number_of_islands
+    if islands_matrix(i,5) == 0
+        sampled_survival = rand(1);
+           if sampled_survival <= proportion_of_ss
+               islands_matrix(i,5) = 3;
+           elseif sampled_survival <= proportion_of_As
+               islands_matrix(i,5) = 2;
+           else
+               islands_matrix(i,5) = 1;
+           end 
+    else
+    end
+end
+
+% The next step is to reshuffle - everyone in the population finds a mate
+% that is NOT from their island
+
+
+% For the second position of every island, assign a new value that is
+% chosen from any second position besides its own
+
+% permute the second individual on the island, then check if anyone didn't
+% switch places (aka ended up with a sibling), manually fix
+% peoples numbers in the individual vector shouldnt change when they move
+% islands
+
+
+%this will tell us which island the new (2nd member of the island)
+
+
+new_partners = randperm(number_of_islands);
+new_partners_backup = randperm(number_of_islands);
+
+for i=1:number_of_islands
+    new_partners_number = islands_matrix(new_partners(i),4);
+    if new_partners_number == islands_matrix(i,4) 
+        new_partners_number = islands_matrix(new_partners_backup(i),4);
+    else
+    end
+    new_partners_genotype = islands_matrix(new_partners(i),5);
+
+    islands_matrix(i,4) = new_partners_number;
+    islands_matrix(i,5) = new_partners_genotype;
+end
+
+
+
+
+end
+
+
+% Now we need to save the final distributions of genotypes in a table
+
+% First count AA
+counting_AA = (islands_matrix(:, 3) == 1);
+counting_AA_two = (islands_matrix(:, 5) == 1);
+% Sum to get the total number of AA in the population
+count_AA = counting_AA+counting_AA_two;
+count_AA_sum = sum(count_AA);
+% Now count As
+counting_As = (islands_matrix(:, 3) == 2);
+counting_As_two = (islands_matrix(:, 5) == 2);
+% Sum to get the total number of As in the population
+count_As = counting_As+counting_As_two;
+count_As_sum = sum(count_As);
+% Lastly, count ss
+counting_ss = (islands_matrix(:, 3) == 3);
+counting_ss_two = (islands_matrix(:, 5) == 3);
+% Sum to get the total number of ss in the population
+count_ss = counting_ss+counting_ss_two;
+count_ss_sum = sum(count_ss);
+
+
+
+summary_table(k,5) = count_AA_sum;
+summary_table(k,6) = count_As_sum;
+summary_table(k,7) = count_ss_sum;
+end
+
+
+
+disp(summary_table)
